@@ -1,82 +1,129 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { v4 as uuidv4 } from 'uuid'
 import { Memo, MemoFormData } from '@/types/memo'
 import { localStorageUtils } from '@/utils/localStorage'
-import { seedSampleData } from '@/utils/seedData'
+import { v4 as uuidv4 } from 'uuid'
 
 export const useMemos = () => {
   const [memos, setMemos] = useState<Memo[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [isClient, setIsClient] = useState(false)
-
-  // 클라이언트 사이드 확인
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   // 메모 로드
   useEffect(() => {
-    if (!isClient) return
-
     const loadMemos = async () => {
       setLoading(true)
       try {
-        // 샘플 데이터 시딩 (기존 데이터가 없을 때만)
-        seedSampleData()
+        // localStorage에서 메모 로드
         const loadedMemos = localStorageUtils.getMemos()
-        setMemos(loadedMemos)
-        console.log('Loaded memos:', loadedMemos.length)
+        
+        // 데이터가 없으면 샘플 데이터 추가
+        if (loadedMemos.length === 0) {
+          const sampleMemo: Memo = {
+            id: uuidv4(),
+            title: '마크다운 편집기 테스트',
+            content: `# 마크다운 편집기가 추가되었습니다! 🎉
+
+이제 **마크다운 문법**을 사용하여 메모를 작성할 수 있습니다.
+
+## 지원되는 기능들:
+
+- **굵은 글씨** 및 *기울임체*
+- [링크](https://example.com)
+- \`코드\` 및 코드 블록
+- 목록 작성
+
+### 할 일 목록:
+- [x] 마크다운 편집기 구현
+- [x] 실시간 프리뷰 기능
+- [ ] 더 많은 기능 추가
+
+> 인용문도 사용할 수 있습니다!
+
+\`\`\`javascript
+// 코드 블록도 지원합니다
+console.log('Hello, Markdown!');
+\`\`\``,
+            category: 'personal',
+            tags: ['마크다운', '테스트', '편집기'],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+          localStorageUtils.addMemo(sampleMemo)
+          setMemos([sampleMemo])
+        } else {
+          setMemos(loadedMemos)
+        }
       } catch (error) {
         console.error('Failed to load memos:', error)
+        setMemos([])
       } finally {
         setLoading(false)
       }
     }
 
     loadMemos()
-  }, [isClient])
+  }, [])
 
   // 메모 생성
-  const createMemo = useCallback((formData: MemoFormData): Memo => {
-    const newMemo: Memo = {
-      id: uuidv4(),
-      ...formData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+  const createMemo = useCallback(async (formData: MemoFormData): Promise<Memo | null> => {
+    try {
+      const newMemo: Memo = {
+        id: uuidv4(),
+        title: formData.title,
+        content: formData.content,
+        category: formData.category,
+        tags: formData.tags,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      
+      localStorageUtils.addMemo(newMemo)
+      setMemos(prev => [newMemo, ...prev])
+      return newMemo
+    } catch (error) {
+      console.error('Failed to create memo:', error)
+      return null
     }
-
-    localStorageUtils.addMemo(newMemo)
-    setMemos(prev => [newMemo, ...prev])
-
-    return newMemo
   }, [])
 
   // 메모 업데이트
   const updateMemo = useCallback(
-    (id: string, formData: MemoFormData): void => {
-      const existingMemo = memos.find(memo => memo.id === id)
-      if (!existingMemo) return
-
-      const updatedMemo: Memo = {
-        ...existingMemo,
-        ...formData,
-        updatedAt: new Date().toISOString(),
+    async (id: string, formData: MemoFormData): Promise<boolean> => {
+      try {
+        const updatedMemo: Memo = {
+          id,
+          title: formData.title,
+          content: formData.content,
+          category: formData.category,
+          tags: formData.tags,
+          createdAt: memos.find(m => m.id === id)?.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        
+        localStorageUtils.updateMemo(updatedMemo)
+        setMemos(prev => prev.map(memo => (memo.id === id ? updatedMemo : memo)))
+        return true
+      } catch (error) {
+        console.error('Failed to update memo:', error)
+        return false
       }
-
-      localStorageUtils.updateMemo(updatedMemo)
-      setMemos(prev => prev.map(memo => (memo.id === id ? updatedMemo : memo)))
     },
     [memos]
   )
 
   // 메모 삭제
-  const deleteMemo = useCallback((id: string): void => {
-    localStorageUtils.deleteMemo(id)
-    setMemos(prev => prev.filter(memo => memo.id !== id))
+  const deleteMemo = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      localStorageUtils.deleteMemo(id)
+      setMemos(prev => prev.filter(memo => memo.id !== id))
+      return true
+    } catch (error) {
+      console.error('Failed to delete memo:', error)
+      return false
+    }
   }, [])
 
   // 메모 검색
@@ -91,10 +138,15 @@ export const useMemos = () => {
 
   // 특정 메모 가져오기
   const getMemoById = useCallback(
-    (id: string): Memo | undefined => {
-      return memos.find(memo => memo.id === id)
+    async (id: string): Promise<Memo | null> => {
+      try {
+        return localStorageUtils.getMemoById(id)
+      } catch (error) {
+        console.error('Failed to get memo by id:', error)
+        return null
+      }
     },
-    [memos]
+    []
   )
 
   // 필터링된 메모 목록
@@ -121,11 +173,17 @@ export const useMemos = () => {
   }, [memos, selectedCategory, searchQuery])
 
   // 모든 메모 삭제
-  const clearAllMemos = useCallback((): void => {
-    localStorageUtils.clearMemos()
-    setMemos([])
-    setSearchQuery('')
-    setSelectedCategory('all')
+  const clearAllMemos = useCallback(async (): Promise<boolean> => {
+    try {
+      localStorageUtils.clearMemos()
+      setMemos([])
+      setSearchQuery('')
+      setSelectedCategory('all')
+      return true
+    } catch (error) {
+      console.error('Failed to clear all memos:', error)
+      return false
+    }
   }, [])
 
   // 통계 정보

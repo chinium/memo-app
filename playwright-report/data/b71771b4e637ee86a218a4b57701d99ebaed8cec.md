@@ -1,0 +1,68 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - heading "📝 메모 앱" [level=1]
+  - button "새 메모":
+    - img
+    - text: 새 메모
+- main:
+  - img
+  - textbox "메모 검색..."
+  - combobox:
+    - option "전체 카테고리" [selected]
+    - option "개인 (1)"
+    - option "업무 (1)"
+    - option "학습 (0)"
+    - option "아이디어 (0)"
+    - option "기타 (0)"
+  - text: 총 2개의 메모
+  - heading "Playwright 최종 안정화 테스트" [level=3]
+  - text: 업무 2025년 8월 1일 오후 03:29
+  - button "편집":
+    - img
+  - button "삭제":
+    - img
+  - heading "최종 안정화 테스트 내용입니다." [level=1]
+  - text: "#e2e-stable"
+  - heading "마크다운 편집기 테스트" [level=3]
+  - text: 개인 2025년 8월 1일 오후 03:29
+  - button "편집":
+    - img
+  - button "삭제":
+    - img
+  - heading "마크다운 편집기가 추가되었습니다! 🎉" [level=1]
+  - paragraph:
+    - text: 이제
+    - strong: 마크다운 문법
+    - text: 을 사용하여 메모를 작성할 수 있습니다.
+  - heading "지원되는 기능들:" [level=2]
+  - list:
+    - listitem:
+      - strong: 굵은 글씨
+      - text: 및
+      - emphasis: 기울임체
+    - listitem:
+      - link "링크":
+        - /url: https://example.com
+    - listitem:
+      - code: 코드
+      - text: 및 코드 블록
+    - listitem: 목록 작성
+  - heading "할 일 목록:" [level=3]
+  - list:
+    - listitem:
+      - checkbox [checked] [disabled]
+      - text: 마크다운 편집기 구현
+    - listitem:
+      - checkbox [checked] [disabled]
+      - text: 실시간 프리뷰 기능
+    - listitem:
+      - checkbox [disabled]
+      - text: 더 많은 기능 추가
+  - blockquote:
+    - paragraph: 인용문도 사용할 수 있습니다!
+  - code: // 코드 블록도 지원합니다 console.log('Hello, Markdown!');
+  - text: "#마크다운 #테스트 #편집기"
+- alert
+```

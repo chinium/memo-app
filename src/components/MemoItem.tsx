@@ -1,22 +1,21 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import { Memo, MEMO_CATEGORIES } from '@/types/memo'
-
-// MarkdownPreview를 dynamic import로 로드 (SSR 방지)
-const MarkdownPreview = dynamic(
-  () => import('@uiw/react-markdown-preview'),
-  { ssr: false }
-)
+import MDEditor from '@uiw/react-md-editor'
 
 interface MemoItemProps {
   memo: Memo
+  onView: (memo: Memo) => void
   onEdit: (memo: Memo) => void
-  onDelete: (id: string) => void
-  onView?: (memo: Memo) => void
+  onDelete: (id: string) => Promise<boolean>
 }
 
-export default function MemoItem({ memo, onEdit, onDelete, onView }: MemoItemProps) {
+export default function MemoItem({
+  memo,
+  onView,
+  onEdit,
+  onDelete,
+}: MemoItemProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('ko-KR', {
@@ -39,20 +38,30 @@ export default function MemoItem({ memo, onEdit, onDelete, onView }: MemoItemPro
     return colors[category as keyof typeof colors] || colors.other
   }
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // 편집/삭제 버튼 클릭 시 카드 클릭 이벤트 방지
-    if ((e.target as HTMLElement).closest('button')) {
-      return
-    }
-    if (onView) {
-      onView(memo)
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onEdit(memo)
+  }
+
+  const handleDeleteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (window.confirm('정말로 이 메모를 삭제하시겠습니까?')) {
+      try {
+        const success = await onDelete(memo.id)
+        if (!success) {
+          alert('메모 삭제에 실패했습니다.')
+        }
+      } catch (error) {
+        console.error('Error deleting memo:', error)
+        alert('메모 삭제 중 오류가 발생했습니다.')
+      }
     }
   }
 
   return (
-    <div 
+    <div
       className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer"
-      onClick={handleCardClick}
+      onClick={() => onView(memo)}
     >
       {/* 헤더 */}
       <div className="flex justify-between items-start mb-3">
@@ -62,7 +71,9 @@ export default function MemoItem({ memo, onEdit, onDelete, onView }: MemoItemPro
           </h3>
           <div className="flex items-center gap-2">
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(memo.category)}`}
+              className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(
+                memo.category
+              )}`}
             >
               {MEMO_CATEGORIES[memo.category as keyof typeof MEMO_CATEGORIES] ||
                 memo.category}
@@ -76,7 +87,7 @@ export default function MemoItem({ memo, onEdit, onDelete, onView }: MemoItemPro
         {/* 액션 버튼 */}
         <div className="flex gap-2 ml-4">
           <button
-            onClick={() => onEdit(memo)}
+            onClick={handleEditClick}
             className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
             title="편집"
           >
@@ -95,11 +106,7 @@ export default function MemoItem({ memo, onEdit, onDelete, onView }: MemoItemPro
             </svg>
           </button>
           <button
-            onClick={() => {
-              if (window.confirm('정말로 이 메모를 삭제하시겠습니까?')) {
-                onDelete(memo.id)
-              }
-            }}
+            onClick={handleDeleteClick}
             className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="삭제"
           >
@@ -122,8 +129,35 @@ export default function MemoItem({ memo, onEdit, onDelete, onView }: MemoItemPro
 
       {/* 내용 */}
       <div className="mb-4">
-        <div className="text-gray-700 text-sm leading-relaxed line-clamp-3 prose prose-sm max-w-none prose-headings:text-gray-700 prose-p:text-gray-700 prose-strong:text-gray-700 prose-code:text-gray-700">
-          <MarkdownPreview source={memo.content} />
+        <div
+          className="prose prose-sm max-w-none text-gray-700 leading-relaxed"
+          style={
+            {
+              '--tw-prose-body': 'rgb(55 65 81)',
+              '--tw-prose-headings': 'rgb(31 41 55)',
+              '--tw-prose-bold': 'rgb(31 41 55)',
+              '--tw-prose-links': 'rgb(59 130 246)',
+              maxHeight: '150px',
+              overflow: 'hidden',
+              position: 'relative',
+            } as any
+          }
+        >
+          <MDEditor.Markdown
+            source={memo.content}
+            style={{
+              whiteSpace: 'normal',
+              backgroundColor: 'transparent',
+              fontSize: '14px',
+              lineHeight: '1.6',
+            }}
+          />
+          {memo.content.length > 200 && (
+            <div
+              className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent"
+              style={{ pointerEvents: 'none' }}
+            />
+          )}
         </div>
       </div>
 
