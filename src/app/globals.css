@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@import '@uiw/react-md-editor/markdown-editor.css';
+@import '@uiw/react-markdown-preview/markdown.css';
 
 :root {
   --background: #ffffff;
@@ -38,4 +40,206 @@ body {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Custom prose styles for markdown */
+.prose {
+  max-width: none;
+  color: inherit;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: inherit;
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  line-height: 1.25;
+}
+
+.prose h1 { font-size: 1.875rem; }
+.prose h2 { font-size: 1.5rem; }
+.prose h3 { font-size: 1.25rem; }
+.prose h4 { font-size: 1.125rem; }
+.prose h5 { font-size: 1rem; }
+.prose h6 { font-size: 0.875rem; }
+
+.prose p {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+  line-height: 1.5;
+}
+
+.prose strong {
+  font-weight: 600;
+  color: inherit;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose code {
+  background-color: #f3f4f6;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  color: inherit;
+}
+
+.prose pre {
+  background-color: #f3f4f6;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.prose pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+.prose ul,
+.prose ol {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+  padding-left: 1.5em;
+}
+
+.prose ul {
+  list-style-type: disc;
+}
+
+.prose ol {
+  list-style-type: decimal;
+}
+
+.prose ul ul {
+  list-style-type: circle;
+}
+
+.prose ul ul ul {
+  list-style-type: square;
+}
+
+.prose li {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+  display: list-item;
+}
+
+.prose li::marker {
+  color: inherit;
+}
+
+.prose a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.prose a:hover {
+  color: #1d4ed8;
+}
+
+.prose blockquote {
+  border-left: 4px solid #d1d5db;
+  padding-left: 1rem;
+  margin: 1em 0;
+  font-style: italic;
+  color: #6b7280;
+}
+
+/* Prose size variants */
+.prose-sm {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.prose-sm h1 { font-size: 1.5rem; }
+.prose-sm h2 { font-size: 1.25rem; }
+.prose-sm h3 { font-size: 1.125rem; }
+.prose-sm h4 { font-size: 1rem; }
+.prose-sm h5 { font-size: 0.875rem; }
+.prose-sm h6 { font-size: 0.8125rem; }
+
+/* MDEditor 기본 스타일 */
+.w-md-editor {
+  background-color: white;
+}
+
+.w-md-editor .w-md-editor-text-container {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.w-md-editor .w-md-editor-text {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace !important;
+  color: #374151 !important;
+}
+
+.w-md-editor .w-md-editor-text-textarea,
+.w-md-editor .w-md-editor-text-input {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace !important;
+  color: #374151 !important;
+}
+
+.w-md-editor .w-md-editor-preview {
+  padding: 12px;
+}
+
+/* MDEditor 프리뷰 영역 리스트 스타일 */
+.w-md-editor-preview ul,
+.wmde-markdown ul {
+  list-style-type: disc !important;
+  margin: 0.75em 0 !important;
+  padding-left: 1.5em !important;
+}
+
+.w-md-editor-preview ol,
+.wmde-markdown ol {
+  list-style-type: decimal !important;
+  margin: 0.75em 0 !important;
+  padding-left: 1.5em !important;
+}
+
+.w-md-editor-preview li,
+.wmde-markdown li {
+  display: list-item !important;
+  margin: 0.25em 0 !important;
+}
+
+.w-md-editor-preview ul ul,
+.wmde-markdown ul ul {
+  list-style-type: circle !important;
+}
+
+.w-md-editor-preview ul ul ul,
+.wmde-markdown ul ul ul {
+  list-style-type: square !important;
+}
+
+/* MarkdownPreview 컴포넌트 리스트 스타일 */
+.wmde-markdown-var ul {
+  list-style-type: disc !important;
+  margin: 0.75em 0 !important;
+  padding-left: 1.5em !important;
+}
+
+.wmde-markdown-var ol {
+  list-style-type: decimal !important;
+  margin: 0.75em 0 !important;
+  padding-left: 1.5em !important;
+}
+
+.wmde-markdown-var li {
+  display: list-item !important;
+  margin: 0.25em 0 !important;
 }

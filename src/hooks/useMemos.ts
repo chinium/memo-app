@@ -8,24 +8,37 @@ import { seedSampleData } from '@/utils/seedData'
 
 export const useMemos = () => {
   const [memos, setMemos] = useState<Memo[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [isClient, setIsClient] = useState(false)
+
+  // 클라이언트 사이드 확인
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // 메모 로드
   useEffect(() => {
-    setLoading(true)
-    try {
-      // 샘플 데이터 시딩 (기존 데이터가 없을 때만)
-      seedSampleData()
-      const loadedMemos = localStorageUtils.getMemos()
-      setMemos(loadedMemos)
-    } catch (error) {
-      console.error('Failed to load memos:', error)
-    } finally {
-      setLoading(false)
+    if (!isClient) return
+
+    const loadMemos = async () => {
+      setLoading(true)
+      try {
+        // 샘플 데이터 시딩 (기존 데이터가 없을 때만)
+        seedSampleData()
+        const loadedMemos = localStorageUtils.getMemos()
+        setMemos(loadedMemos)
+        console.log('Loaded memos:', loadedMemos.length)
+      } catch (error) {
+        console.error('Failed to load memos:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [])
+
+    loadMemos()
+  }, [isClient])
 
   // 메모 생성
   const createMemo = useCallback((formData: MemoFormData): Memo => {

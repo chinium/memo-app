@@ -62,6 +62,16 @@ export const sampleMemos: Memo[] = [
     createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), // 20일 전
     updatedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(), // 12일 전
   },
+  {
+    id: '7',
+    title: '마크다운 스타일 테스트',
+    content:
+      '# 마크다운 테스트\n\n이 메모는 **마크다운 스타일링**을 테스트하기 위한 것입니다.\n\n## 불렛 포인트 테스트\n\n### 쇼핑 목록\n- 사과\n- 바나나\n- 우유\n- 빵\n  - 식빵\n  - 바게트\n    - 프렌치 바게트\n    - 독일식 브레첼\n\n### 할 일 목록\n1. 아침 운동하기\n2. 이메일 확인하기\n3. 회의 준비하기\n4. 프로젝트 진행하기\n   1. 요구사항 분석\n   2. 설계 문서 작성\n   3. 개발 시작\n\n## 기타 스타일\n\n**굵은 글씨**와 *기울임꼴*, 그리고 `코드`도 테스트해보겠습니다.\n\n> 이것은 인용구입니다.\n> 여러 줄에 걸쳐 작성할 수 있습니다.\n\n```javascript\nconst hello = () => {\n  console.log("Hello, World!");\n};\n```',
+    category: 'other',
+    tags: ['마크다운', '테스트', '스타일'],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ]
 
 export const seedSampleData = () => {
