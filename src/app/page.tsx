@@ -23,15 +23,36 @@ export default function Home() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingMemo, setEditingMemo] = useState<Memo | null>(null)
 
-  const handleCreateMemo = (formData: MemoFormData) => {
-    createMemo(formData)
-    setIsFormOpen(false)
+  const handleCreateMemo = async (formData: MemoFormData) => {
+    try {
+      const result = await createMemo(formData)
+      if (result) {
+        setIsFormOpen(false)
+      } else {
+        console.error('Failed to create memo')
+        // TODO: Show error message to user
+      }
+    } catch (error) {
+      console.error('Error creating memo:', error)
+      // TODO: Show error message to user
+    }
   }
 
-  const handleUpdateMemo = (formData: MemoFormData) => {
+  const handleUpdateMemo = async (formData: MemoFormData) => {
     if (editingMemo) {
-      updateMemo(editingMemo.id, formData)
-      setEditingMemo(null)
+      try {
+        const success = await updateMemo(editingMemo.id, formData)
+        if (success) {
+          setEditingMemo(null)
+          setIsFormOpen(false)
+        } else {
+          console.error('Failed to update memo')
+          // TODO: Show error message to user
+        }
+      } catch (error) {
+        console.error('Error updating memo:', error)
+        // TODO: Show error message to user
+      }
     }
   }
 

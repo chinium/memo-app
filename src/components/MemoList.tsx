@@ -13,7 +13,7 @@ interface MemoListProps {
   onSearchChange: (query: string) => void
   onCategoryChange: (category: string) => void
   onEditMemo: (memo: Memo) => void
-  onDeleteMemo: (id: string) => void
+  onDeleteMemo: (id: string) => Promise<boolean>
   stats: {
     total: number
     filtered: number
@@ -33,17 +33,24 @@ export default function MemoList({
   stats,
 }: MemoListProps) {
   const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleViewMemo = (memo: Memo) => {
     setSelectedMemo(memo)
-    setIsModalOpen(true)
+    document.body.style.overflow = 'hidden'
   }
 
   const handleCloseModal = () => {
-    setIsModalOpen(false)
     setSelectedMemo(null)
+    document.body.style.overflow = ''
   }
+
+  const handleDeleteFromModal = async (id: string) => {
+    const success = await onDeleteMemo(id)
+    if (success) {
+      handleCloseModal()
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -96,8 +103,7 @@ export default function MemoList({
               <option value="all">전체 카테고리</option>
               {DEFAULT_CATEGORIES.map(category => (
                 <option key={category} value={category}>
-                  {MEMO_CATEGORIES[category]} ({stats.byCategory[category] || 0}
-                  )
+                  {MEMO_CATEGORIES[category]} ({stats.byCategory[category] || 0})
                 </option>
               ))}
             </select>
@@ -165,9 +171,9 @@ export default function MemoList({
             <MemoItem
               key={memo.id}
               memo={memo}
+              onView={handleViewMemo}
               onEdit={onEditMemo}
               onDelete={onDeleteMemo}
-              onView={handleViewMemo}
             />
           ))}
         </div>
@@ -177,10 +183,9 @@ export default function MemoList({
       {selectedMemo && (
         <MemoDetailModal
           memo={selectedMemo}
-          isOpen={isModalOpen}
           onClose={handleCloseModal}
           onEdit={onEditMemo}
-          onDelete={onDeleteMemo}
+          onDelete={handleDeleteFromModal}
         />
       )}
     </div>

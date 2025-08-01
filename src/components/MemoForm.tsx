@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import MDEditor from '@uiw/react-md-editor'
 import {
   Memo,
   MemoFormData,
+  MemoCategory,
   MEMO_CATEGORIES,
   DEFAULT_CATEGORIES,
 } from '@/types/memo'
@@ -11,7 +13,7 @@ import {
 interface MemoFormProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: MemoFormData) => void
+  onSubmit: (data: MemoFormData) => Promise<void>
   editingMemo?: Memo | null
 }
 
@@ -28,25 +30,6 @@ export default function MemoForm({
     tags: [],
   })
   const [tagInput, setTagInput] = useState('')
-  const [MDEditor, setMDEditor] = useState<any>(null)
-  const [isEditorLoaded, setIsEditorLoaded] = useState(false)
-
-  // MDEditor를 클라이언트 사이드에서만 로드
-  useEffect(() => {
-    const loadMDEditor = async () => {
-      try {
-        const module = await import('@uiw/react-md-editor')
-        setMDEditor(() => module.default)
-        setIsEditorLoaded(true)
-      } catch (error) {
-        console.error('MDEditor 로딩 실패:', error)
-      }
-    }
-    
-    if (typeof window !== 'undefined') {
-      loadMDEditor()
-    }
-  }, [])
 
   // 편집 모드일 때 폼 데이터 설정
   useEffect(() => {
@@ -68,14 +51,20 @@ export default function MemoForm({
     setTagInput('')
   }, [editingMemo, isOpen])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.title.trim() || !formData.content.trim()) {
       alert('제목과 내용을 모두 입력해주세요.')
       return
     }
-    onSubmit(formData)
-    onClose()
+    
+    try {
+      await onSubmit(formData)
+      // onSubmit이 성공적으로 완료되면 onClose가 handleCreateMemo/handleUpdateMemo에서 호출됨
+    } catch (error) {
+      console.error('Error submitting memo:', error)
+      alert('메모 저장 중 오류가 발생했습니다.')
+    }
   }
 
   const handleAddTag = () => {
@@ -174,7 +163,7 @@ export default function MemoForm({
                 onChange={e =>
                   setFormData(prev => ({
                     ...prev,
-                    category: e.target.value,
+                    category: e.target.value as MemoCategory,
                   }))
                 }
                 className="text-gray-400 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -195,26 +184,28 @@ export default function MemoForm({
               >
                 내용 * (마크다운 지원)
               </label>
-              <div className="border border-gray-300 rounded-lg overflow-hidden">
-                {isEditorLoaded && MDEditor ? (
-                  <MDEditor
-                    value={formData.content}
-                    onChange={(value: string | undefined) =>
-                      setFormData(prev => ({
-                        ...prev,
-                        content: value || '',
-                      }))
-                    }
-                    preview="live"
-                    height={300}
-                    data-color-mode="light"
-                  />
-                ) : (
-                  <div className="w-full h-[300px] flex items-center justify-center bg-gray-50">
-                    <div className="text-gray-500">에디터 로딩 중...</div>
-                  </div>
-                )}
-              </div>
+              <MDEditor
+                value={formData.content}
+                onChange={(value) =>
+                  setFormData(prev => ({
+                    ...prev,
+                    content: value || '',
+                  }))
+                }
+                preview="live"
+                height={350}
+                data-color-mode="light"
+                visibleDragbar={false}
+                textareaProps={{
+                  placeholder: '마크다운으로 메모를 작성하세요...\n\n예시:\n# 제목\n- 목록 항목\n**굵은 글씨**\n[링크](http://example.com)',
+                  required: true,
+                  style: {
+                    fontSize: '14px',
+                    lineHeight: '1.6',
+                    fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+                  },
+                }}
+              />
             </div>
 
             {/* 태그 */}
