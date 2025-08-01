@@ -28,6 +28,25 @@ export default function MemoForm({
     tags: [],
   })
   const [tagInput, setTagInput] = useState('')
+  const [MDEditor, setMDEditor] = useState<any>(null)
+  const [isEditorLoaded, setIsEditorLoaded] = useState(false)
+
+  // MDEditor를 클라이언트 사이드에서만 로드
+  useEffect(() => {
+    const loadMDEditor = async () => {
+      try {
+        const module = await import('@uiw/react-md-editor')
+        setMDEditor(() => module.default)
+        setIsEditorLoaded(true)
+      } catch (error) {
+        console.error('MDEditor 로딩 실패:', error)
+      }
+    }
+    
+    if (typeof window !== 'undefined') {
+      loadMDEditor()
+    }
+  }, [])
 
   // 편집 모드일 때 폼 데이터 설정
   useEffect(() => {
@@ -174,22 +193,28 @@ export default function MemoForm({
                 htmlFor="content"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                내용 *
+                내용 * (마크다운 지원)
               </label>
-              <textarea
-                id="content"
-                value={formData.content}
-                onChange={e =>
-                  setFormData(prev => ({
-                    ...prev,
-                    content: e.target.value,
-                  }))
-                }
-                className="placeholder-gray-400 text-gray-400 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-                placeholder="메모 내용을 입력하세요"
-                rows={8}
-                required
-              />
+              <div className="border border-gray-300 rounded-lg overflow-hidden">
+                {isEditorLoaded && MDEditor ? (
+                  <MDEditor
+                    value={formData.content}
+                    onChange={(value: string | undefined) =>
+                      setFormData(prev => ({
+                        ...prev,
+                        content: value || '',
+                      }))
+                    }
+                    preview="live"
+                    height={300}
+                    data-color-mode="light"
+                  />
+                ) : (
+                  <div className="w-full h-[300px] flex items-center justify-center bg-gray-50">
+                    <div className="text-gray-500">에디터 로딩 중...</div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* 태그 */}

@@ -1,14 +1,22 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { Memo, MEMO_CATEGORIES } from '@/types/memo'
+
+// MarkdownPreview를 dynamic import로 로드 (SSR 방지)
+const MarkdownPreview = dynamic(
+  () => import('@uiw/react-markdown-preview'),
+  { ssr: false }
+)
 
 interface MemoItemProps {
   memo: Memo
   onEdit: (memo: Memo) => void
   onDelete: (id: string) => void
+  onView?: (memo: Memo) => void
 }
 
-export default function MemoItem({ memo, onEdit, onDelete }: MemoItemProps) {
+export default function MemoItem({ memo, onEdit, onDelete, onView }: MemoItemProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('ko-KR', {
@@ -31,8 +39,21 @@ export default function MemoItem({ memo, onEdit, onDelete }: MemoItemProps) {
     return colors[category as keyof typeof colors] || colors.other
   }
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // 편집/삭제 버튼 클릭 시 카드 클릭 이벤트 방지
+    if ((e.target as HTMLElement).closest('button')) {
+      return
+    }
+    if (onView) {
+      onView(memo)
+    }
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200">
+    <div 
+      className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+      onClick={handleCardClick}
+    >
       {/* 헤더 */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1">
@@ -101,9 +122,9 @@ export default function MemoItem({ memo, onEdit, onDelete }: MemoItemProps) {
 
       {/* 내용 */}
       <div className="mb-4">
-        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
-          {memo.content}
-        </p>
+        <div className="text-gray-700 text-sm leading-relaxed line-clamp-3 prose prose-sm max-w-none prose-headings:text-gray-700 prose-p:text-gray-700 prose-strong:text-gray-700 prose-code:text-gray-700">
+          <MarkdownPreview source={memo.content} />
+        </div>
       </div>
 
       {/* 태그 */}
